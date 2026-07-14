@@ -1,0 +1,106 @@
+/*
+ * unit.lib -- a deterministic test library. Every table is a single scalar, so
+ * delays don't depend on slew or load. That makes arrival times exact integers
+ * of the base delays, which is perfect for hand-checking the engine's math:
+ *   INV = 0.10   BUF = 0.15   NAND2 = 0.20   AND2 = 0.25   DFF CK->Q = 0.30
+ *   DFF setup = 0.05
+ */
+library (unit) {
+  time_unit : "1ns";
+  capacitive_load_unit (1, pf);
+
+  cell (INV) {
+    pin (A) { direction : input; capacitance : 0.001; }
+    pin (Y) {
+      direction : output; function : "!A";
+      timing () {
+        related_pin : "A"; timing_sense : negative_unate; timing_type : combinational;
+        cell_rise (scalar) { values ("0.10"); }
+        cell_fall (scalar) { values ("0.10"); }
+        rise_transition (scalar) { values ("0.05"); }
+        fall_transition (scalar) { values ("0.05"); }
+      }
+    }
+  }
+
+  cell (BUF) {
+    pin (A) { direction : input; capacitance : 0.001; }
+    pin (Y) {
+      direction : output; function : "A";
+      timing () {
+        related_pin : "A"; timing_sense : positive_unate; timing_type : combinational;
+        cell_rise (scalar) { values ("0.15"); }
+        cell_fall (scalar) { values ("0.15"); }
+        rise_transition (scalar) { values ("0.05"); }
+        fall_transition (scalar) { values ("0.05"); }
+      }
+    }
+  }
+
+  cell (NAND2) {
+    pin (A) { direction : input; capacitance : 0.001; }
+    pin (B) { direction : input; capacitance : 0.001; }
+    pin (Y) {
+      direction : output; function : "!(A&B)";
+      timing () {
+        related_pin : "A"; timing_sense : negative_unate; timing_type : combinational;
+        cell_rise (scalar) { values ("0.20"); }
+        cell_fall (scalar) { values ("0.20"); }
+        rise_transition (scalar) { values ("0.05"); }
+        fall_transition (scalar) { values ("0.05"); }
+      }
+      timing () {
+        related_pin : "B"; timing_sense : negative_unate; timing_type : combinational;
+        cell_rise (scalar) { values ("0.20"); }
+        cell_fall (scalar) { values ("0.20"); }
+        rise_transition (scalar) { values ("0.05"); }
+        fall_transition (scalar) { values ("0.05"); }
+      }
+    }
+  }
+
+  cell (AND2) {
+    pin (A) { direction : input; capacitance : 0.001; }
+    pin (B) { direction : input; capacitance : 0.001; }
+    pin (Y) {
+      direction : output; function : "A&B";
+      timing () {
+        related_pin : "A"; timing_sense : positive_unate; timing_type : combinational;
+        cell_rise (scalar) { values ("0.25"); }
+        cell_fall (scalar) { values ("0.25"); }
+        rise_transition (scalar) { values ("0.05"); }
+        fall_transition (scalar) { values ("0.05"); }
+      }
+      timing () {
+        related_pin : "B"; timing_sense : positive_unate; timing_type : combinational;
+        cell_rise (scalar) { values ("0.25"); }
+        cell_fall (scalar) { values ("0.25"); }
+        rise_transition (scalar) { values ("0.05"); }
+        fall_transition (scalar) { values ("0.05"); }
+      }
+    }
+  }
+
+  cell (DFF) {
+    ff (IQ, IQN) { clocked_on : "CK"; next_state : "D"; }
+    pin (CK) { direction : input; clock : true; capacitance : 0.001; }
+    pin (D) {
+      direction : input; capacitance : 0.001;
+      timing () {
+        related_pin : "CK"; timing_type : setup_rising;
+        rise_constraint (scalar) { values ("0.05"); }
+        fall_constraint (scalar) { values ("0.05"); }
+      }
+    }
+    pin (Q) {
+      direction : output; function : "IQ";
+      timing () {
+        related_pin : "CK"; timing_type : rising_edge;
+        cell_rise (scalar) { values ("0.30"); }
+        cell_fall (scalar) { values ("0.30"); }
+        rise_transition (scalar) { values ("0.05"); }
+        fall_transition (scalar) { values ("0.05"); }
+      }
+    }
+  }
+}

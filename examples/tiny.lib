@@ -1,0 +1,240 @@
+/*
+ * tiny.lib -- a small but realistic Liberty timing library for PySTA demos.
+ *
+ * Times are in nanoseconds, capacitances in picofarads. Every timing arc uses a
+ * 3x3 NLDM table indexed by input slew (index_1) and output load (index_2).
+ * The numbers are plausible for a small standard-cell node but are illustrative,
+ * not from any real PDK.
+ */
+library (tiny) {
+  time_unit : "1ns";
+  voltage_unit : "1V";
+  capacitive_load_unit (1, pf);
+  default_max_transition : 1.0;
+
+  lu_table_template (delay_3x3) {
+    variable_1 : input_net_transition;
+    variable_2 : total_output_net_capacitance;
+    index_1 ("0.01, 0.10, 0.50");
+    index_2 ("0.001, 0.010, 0.050");
+  }
+  lu_table_template (constraint_3x3) {
+    variable_1 : constrained_pin_transition;
+    variable_2 : related_pin_transition;
+    index_1 ("0.01, 0.10, 0.50");
+    index_2 ("0.01, 0.10, 0.50");
+  }
+
+  cell (INV) {
+    area : 1.0;
+    pin (A) { direction : input; capacitance : 0.0015; }
+    pin (Y) {
+      direction : output;
+      function : "!A";
+      timing () {
+        related_pin : "A";
+        timing_sense : negative_unate;
+        timing_type : combinational;
+        cell_rise (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.012, 0.030, 0.095", "0.022, 0.042, 0.110", "0.055, 0.085, 0.160");
+        }
+        cell_fall (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.010, 0.026, 0.085", "0.020, 0.038, 0.100", "0.050, 0.078, 0.150");
+        }
+        rise_transition (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.015, 0.045, 0.150", "0.025, 0.055, 0.165", "0.060, 0.100, 0.230");
+        }
+        fall_transition (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.013, 0.040, 0.140", "0.022, 0.050, 0.155", "0.055, 0.092, 0.215");
+        }
+      }
+    }
+  }
+
+  cell (BUF) {
+    area : 1.5;
+    pin (A) { direction : input; capacitance : 0.0018; }
+    pin (Y) {
+      direction : output;
+      function : "A";
+      timing () {
+        related_pin : "A";
+        timing_sense : positive_unate;
+        timing_type : combinational;
+        cell_rise (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.020, 0.045, 0.130", "0.030, 0.058, 0.150", "0.070, 0.105, 0.205");
+        }
+        cell_fall (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.018, 0.041, 0.120", "0.028, 0.053, 0.140", "0.065, 0.098, 0.195");
+        }
+        rise_transition (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.016, 0.046, 0.152", "0.026, 0.056, 0.167", "0.062, 0.102, 0.232");
+        }
+        fall_transition (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.014, 0.041, 0.142", "0.023, 0.051, 0.157", "0.057, 0.094, 0.217");
+        }
+      }
+    }
+  }
+
+  cell (NAND2) {
+    area : 2.0;
+    pin (A) { direction : input; capacitance : 0.0020; }
+    pin (B) { direction : input; capacitance : 0.0020; }
+    pin (Y) {
+      direction : output;
+      function : "!(A&B)";
+      timing () {
+        related_pin : "A";
+        timing_sense : negative_unate;
+        timing_type : combinational;
+        cell_rise (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.025, 0.050, 0.140", "0.035, 0.062, 0.158", "0.075, 0.110, 0.215");
+        }
+        cell_fall (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.022, 0.045, 0.128", "0.032, 0.057, 0.146", "0.070, 0.104, 0.205");
+        }
+        rise_transition (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.018, 0.050, 0.160", "0.028, 0.060, 0.175", "0.065, 0.108, 0.240");
+        }
+        fall_transition (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.016, 0.046, 0.150", "0.026, 0.056, 0.165", "0.060, 0.100, 0.228");
+        }
+      }
+      timing () {
+        related_pin : "B";
+        timing_sense : negative_unate;
+        timing_type : combinational;
+        cell_rise (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.026, 0.052, 0.143", "0.036, 0.064, 0.161", "0.077, 0.113, 0.219");
+        }
+        cell_fall (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.023, 0.047, 0.131", "0.033, 0.059, 0.149", "0.072, 0.107, 0.209");
+        }
+        rise_transition (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.019, 0.051, 0.162", "0.029, 0.061, 0.177", "0.066, 0.110, 0.242");
+        }
+        fall_transition (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.017, 0.047, 0.152", "0.027, 0.057, 0.167", "0.061, 0.102, 0.230");
+        }
+      }
+    }
+  }
+
+  cell (NOR2) {
+    area : 2.0;
+    pin (A) { direction : input; capacitance : 0.0022; }
+    pin (B) { direction : input; capacitance : 0.0022; }
+    pin (Y) {
+      direction : output;
+      function : "!(A|B)";
+      timing () {
+        related_pin : "A";
+        timing_sense : negative_unate;
+        timing_type : combinational;
+        cell_rise (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.030, 0.058, 0.155", "0.040, 0.070, 0.173", "0.085, 0.122, 0.232");
+        }
+        cell_fall (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.025, 0.050, 0.135", "0.035, 0.062, 0.153", "0.075, 0.110, 0.212");
+        }
+        rise_transition (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.020, 0.054, 0.168", "0.030, 0.064, 0.183", "0.070, 0.115, 0.250");
+        }
+        fall_transition (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.017, 0.048, 0.155", "0.027, 0.058, 0.170", "0.062, 0.104, 0.234");
+        }
+      }
+      timing () {
+        related_pin : "B";
+        timing_sense : negative_unate;
+        timing_type : combinational;
+        cell_rise (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.031, 0.060, 0.158", "0.041, 0.072, 0.176", "0.087, 0.125, 0.236");
+        }
+        cell_fall (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.026, 0.051, 0.138", "0.036, 0.063, 0.156", "0.077, 0.113, 0.216");
+        }
+        rise_transition (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.021, 0.055, 0.170", "0.031, 0.065, 0.185", "0.071, 0.117, 0.252");
+        }
+        fall_transition (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.018, 0.049, 0.157", "0.028, 0.059, 0.172", "0.063, 0.106, 0.236");
+        }
+      }
+    }
+  }
+
+  cell (DFF) {
+    area : 5.0;
+    ff (IQ, IQN) {
+      clocked_on : "CK";
+      next_state : "D";
+    }
+    pin (CK) { direction : input; clock : true; capacitance : 0.0030; }
+    pin (D) {
+      direction : input;
+      capacitance : 0.0020;
+      timing () {
+        related_pin : "CK";
+        timing_type : setup_rising;
+        rise_constraint (constraint_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.01, 0.10, 0.50");
+          values ("0.040, 0.045, 0.060", "0.045, 0.050, 0.065", "0.060, 0.065, 0.080");
+        }
+        fall_constraint (constraint_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.01, 0.10, 0.50");
+          values ("0.038, 0.043, 0.058", "0.043, 0.048, 0.063", "0.058, 0.063, 0.078");
+        }
+      }
+    }
+    pin (Q) {
+      direction : output;
+      function : "IQ";
+      timing () {
+        related_pin : "CK";
+        timing_type : rising_edge;
+        cell_rise (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.090, 0.120, 0.210", "0.100, 0.132, 0.225", "0.130, 0.165, 0.260");
+        }
+        cell_fall (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.085, 0.115, 0.205", "0.095, 0.127, 0.220", "0.125, 0.160, 0.255");
+        }
+        rise_transition (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.020, 0.050, 0.155", "0.030, 0.060, 0.170", "0.065, 0.105, 0.235");
+        }
+        fall_transition (delay_3x3) {
+          index_1 ("0.01, 0.10, 0.50"); index_2 ("0.001, 0.010, 0.050");
+          values ("0.018, 0.046, 0.148", "0.028, 0.056, 0.163", "0.060, 0.100, 0.228");
+        }
+      }
+    }
+  }
+}
