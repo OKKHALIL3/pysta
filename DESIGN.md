@@ -39,9 +39,23 @@ switches. Each stage uses the worst case of the rise and fall tables.
 - `pysta/graph.py` — timing-graph construction.
 - `pysta/timing.py` — forward/backward passes, slack, WNS/TNS, critical path.
 - `pysta/report.py` — timing and critical-path reports.
-- `pysta/cli.py` — `python -m pysta report`.
+- `pysta/cli.py` — `python -m pysta report` / `export`.
+- `pysta/export_graph.py` — emit a resolved timing graph for the C++ core.
+- `cpp/sta_core.cpp` — the graph solver in C++ (see below).
 - `validation/` — OpenSTA cross-check harness.
 - `tests/` — unit and end-to-end tests.
+
+## C++ core
+
+The forward/backward graph propagation is the hot path — on a real design the
+timing graph has millions of nodes. It is also implemented in C++
+(`cpp/sta_core.cpp`) as a self-contained solver over a "resolved timing graph":
+Python does the parsing and NLDM delay lookup and emits each node's launch
+arrival, each edge's delay, and each endpoint's required time
+(`pysta/export_graph.py` / `python -m pysta export`); the C++ core runs the
+topological longest-path, backward required-time, slack, and critical-path
+computation. The two implementations are cross-checked in
+`tests/test_cpp_core.py`.
 
 ## Scope and limitations
 

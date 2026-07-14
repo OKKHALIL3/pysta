@@ -17,6 +17,7 @@ determines how fast a design can be clocked.
   times, slack, WNS/TNS, and critical-path extraction.
 - **Sequential support** — flip-flop clock-to-Q launch and setup checks.
 - **Text reports + CLI**, plus an OpenSTA cross-check harness.
+- **C++ core** (`cpp/`) — the performance-critical graph solver in C++, cross-checked against the Python engine.
 
 ## Usage
 
@@ -33,6 +34,21 @@ when timing is violated, so it can gate a build.
 ```bash
 python3 -m pytest
 ```
+
+## C++ core
+
+The graph propagation — the part that dominates runtime on a real design — is
+also implemented in C++ (`cpp/sta_core.cpp`). Python parses the design and
+resolves each edge's delay from the NLDM tables; the C++ core solves the graph:
+
+```bash
+python3 -m pysta export examples/pipe.v --lib examples/tiny.lib --sdc examples/pipe.sdc -o examples/pipe.graph
+make -C cpp                 # build
+./cpp/sta_core examples/pipe.graph
+```
+
+`tests/test_cpp_core.py` builds the core and confirms it matches the Python
+engine's worst negative slack and critical path.
 
 ## Cross-checking against OpenSTA
 
